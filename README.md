@@ -1,7 +1,7 @@
 # Universidad
 Este repositorio se creó con el propósito de subir todos los códigos de la universidad
 
-🔔 Actualización del Repositorio: Algoritmo de las Torres de Hanói
+🔔 Actualización del Repositorio: Algoritmo de las Torres de Hanói.
 Este repositorio ha sido actualizado con la implementación del algoritmo clásico de las Torres de Hanói, un excelente ejemplo de la aplicación de la recursión en la informática.
 
 
