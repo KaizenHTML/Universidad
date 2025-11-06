@@ -117,15 +117,17 @@ CLIENTES = [
     "Calle 155 #10-20, Bogotá, Colombia"
 ]
 
-# Caracteristicas del problema
+# Parametros del problema
 NUM_FURGONETAS = 5
 MINUTOS_MAX = 8 * 60  
-PAUSA_REPOSTAJE = 8 * 60  # 
+PAUSA_REPOSTAJE = 8 * 60  
 
+
+# Clase principal 
 class AppFurgonetas:
     def __init__(self, root):
         self.root = root
-        self.root.title("🚛 Simulador de Furgonetas - 100 Entregas con Google Maps")
+        self.root.title(" Simulador de Furgonetas - 100 Entregas con Google Maps")
         self.root.geometry("850x750")
 
         tk.Label(root, text="Simulación de 100 Entregas con Restricción de 8 Horas", font=("Arial", 14)).pack(pady=10)
@@ -137,7 +139,7 @@ class AppFurgonetas:
         self.btn_simular = tk.Button(self.btn_frame, text="Iniciar Simulación", command=self.iniciar, bg="#2196F3", fg="white")
         self.btn_simular.pack(side=tk.LEFT, padx=5)
 
-        self.btn_reiniciar = tk.Button(self.btn_frame, text="🔁 Reiniciar", command=self.reiniciar, state="disabled", bg="#9E9E9E", fg="white")
+        self.btn_reiniciar = tk.Button(self.btn_frame, text=" Reiniciar", command=self.reiniciar, state="disabled", bg="#9E9E9E", fg="white")
         self.btn_reiniciar.pack(side=tk.LEFT, padx=5)
 
         self.btn_pausa = None
@@ -148,13 +150,14 @@ class AppFurgonetas:
         self.furgoneta_actual = 0
         self.simulacion_activa = False
 
+    # Iniciando simulación
     def iniciar(self):
         self.simulacion_activa = True
         self.btn_simular.config(state="disabled")
         self.btn_reiniciar.config(state="disabled")
         self.salida.delete(1.0, tk.END)
-        self.salida.insert(tk.END, "📡 Conectando con Google Maps API...\n")
-        self.salida.insert(tk.END, "📦 Asignando 100 clientes a 5 furgonetas (20 cada una)...\n\n")
+        self.salida.insert(tk.END, " Conectando con Google Maps API...\n")
+        self.salida.insert(tk.END, " Asignando 100 clientes a 5 furgonetas (20 cada una)...\n\n")
         self.root.update()
 
         # Creando Furgonetas
@@ -170,6 +173,7 @@ class AppFurgonetas:
         self.procesar_siguiente_furgoneta()
 
 
+    # Furgoneta con sus parametros
     def procesar_siguiente_furgoneta(self):
         if not self.simulacion_activa:
             return
@@ -179,12 +183,12 @@ class AppFurgonetas:
             return
 
         f = self.furgonetas[self.furgoneta_actual]
-        self.salida.insert(tk.END, f"\n🚛 === FURGONETA {f.id} ===\n")
-        self.salida.insert(tk.END, f"📍 Clientes asignados ({len(f.clientes)}):\n")
+        self.salida.insert(tk.END, f"\n === FURGONETA {f.id} ===\n")
+        self.salida.insert(tk.END, f" Clientes asignados ({len(f.clientes)}):\n")
         for idx, cli in enumerate(f.clientes, 1):
             self.salida.insert(tk.END, f"  {idx}. {cli}\n")
         
-        self.salida.insert(tk.END, f"\n🛣️ Ruta tomada (secuencia de visitas):\n")
+        self.salida.insert(tk.END, f"\n Ruta tomada (secuencia de visitas):\n")
         ruta_completa = [ALMACEN] + f.clientes
         for idx, parada in enumerate(ruta_completa):
             if idx == 0:
@@ -192,29 +196,31 @@ class AppFurgonetas:
             else:
                 self.salida.insert(tk.END, f"  {idx+1}. {parada}\n")
         
-        self.salida.insert(tk.END, f"\n⏳ Calculando tiempos con Google Maps...\n")
+        self.salida.insert(tk.END, f"\n Calculando tiempos con Google Maps...\n")
         self.root.update()
 
-        # Calcular ruta en hilo separado para no bloquear GUI
+        # Calculando la ruta en hilos separados
         threading.Thread(target=self.calcular_y_verificar, args=(f,)).start()
 
 
+    # Calculando el tiempo en hilo secundario
     def calcular_y_verificar(self, furgoneta):
         furgoneta.calcular_ruta_completa(ALMACEN)
         self.root.after(0, self.verificar_furgoneta, furgoneta)
 
 
+    # Verificando la capacidad de gasolina
     def verificar_furgoneta(self, f):
-        self.salida.insert(tk.END, f"✅ Tiempo total estimado: {f.tiempo_total:.1f} minutos\n")
+        self.salida.insert(tk.END, f" Tiempo total estimado: {f.tiempo_total:.1f} minutos\n")
         
         if f.tiempo_total > MINUTOS_MAX:
-            self.salida.insert(tk.END, f"\n⚠️ ⚠️ ¡ALERTA! Furgoneta {f.id} excede las 8 horas (480 min)!\n")
+            self.salida.insert(tk.END, f"\n ¡ALERTA! Furgoneta {f.id} excede las 8 horas (480 min)!\n")
             self.salida.insert(tk.END, "Debe recargar gasolina antes de continuar.\n")
             
             if self.btn_pausa is None:
                 self.btn_pausa = tk.Button(
                     self.btn_frame,
-                    text="⛽ Recargar Gasolina",
+                    text=" Recargar Gasolina",
                     command=self.continuar_con_pausa,
                     bg="#FF9800",
                     fg="white"
@@ -226,15 +232,16 @@ class AppFurgonetas:
             self.root.after(100, self.procesar_siguiente_furgoneta)
 
 
+    # Recargando gasolina
     def continuar_con_pausa(self):
         if self.btn_pausa:
             self.btn_pausa.pack_forget()
             self.btn_pausa = None
 
         f = self.furgonetas[self.furgoneta_actual]
-        f.tiempo_total += PAUSA_REPOSTAJE  # ⬅️ Ahora añade 480 minutos (8 horas)
+        f.tiempo_total += PAUSA_REPOSTAJE  
         f.pausas += 1
-        self.salida.insert(tk.END, f"\n⛽ ¡Gasolina recargada! Se añadieron {PAUSA_REPOSTAJE} minutos (8 horas).\n")
+        self.salida.insert(tk.END, f"\n ¡Gasolina recargada! Se añadieron {PAUSA_REPOSTAJE} minutos (8 horas).\n")
         self.salida.insert(tk.END, f"Nuevo tiempo total: {f.tiempo_total:.1f} minutos\n")
         self.salida.insert(tk.END, "-"*70 + "\n")
         
@@ -242,9 +249,10 @@ class AppFurgonetas:
         self.root.after(100, self.procesar_siguiente_furgoneta)
 
 
+    # Mostrando estadisticas finales
     def finalizar_simulacion(self):
         self.salida.insert(tk.END, "\n" + "="*70 + "\n")
-        self.salida.insert(tk.END, "✅ ¡VIAJE COMPLETADO! - 100 Entregas finalizadas\n")
+        self.salida.insert(tk.END, " ¡VIAJE COMPLETADO! - 100 Entregas finalizadas\n")
         self.salida.insert(tk.END, "="*70 + "\n")
         for f in self.furgonetas:
             estado = "✅" if f.tiempo_total - f.pausas * PAUSA_REPOSTAJE <= MINUTOS_MAX else "⚠️"
@@ -252,12 +260,13 @@ class AppFurgonetas:
             if f.pausas > 0:
                 msg += f" (+{f.pausas} recarga(s) de 8 horas)"
             self.salida.insert(tk.END, msg + "\n")
-        self.salida.insert(tk.END, f"\n🎉 ¡Todas las entregas se completaron con éxito!\n")
+        self.salida.insert(tk.END, f"\n ¡Todas las entregas se completaron con éxito!\n")
         
         self.btn_reiniciar.config(state="normal")
         self.simulacion_activa = False
 
 
+    # Reiniciando la busqueda
     def reiniciar(self):
         self.salida.delete(1.0, tk.END)
         self.btn_simular.config(state="normal")
